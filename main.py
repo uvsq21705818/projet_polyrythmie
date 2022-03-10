@@ -6,10 +6,10 @@ import random
 
 WIDTH = 1200
 HEIGHT = 800
-t0 = 3 #????
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) / 2
 omega = math.pi / 2
+omega0 = (3 * math.pi) / 2
 dt = 0.02 #secondes
 taille_objet = 20
 
@@ -20,8 +20,8 @@ LISTE_COULEUR =["#D6ECFF", "#CCE8FF", "#C5E5FF", "#BFE2FF", "#B8DFFF", "#A8D7FF"
 
 def coord_temps(temps):
     """Calcule les coordonnées de la boule du temps"""
-    x = (WIDTH / 2) + rayon_cercle * math.cos(omega * (t0 + temps))
-    y = (HEIGHT / 2) - rayon_cercle * math.sin(omega * (t0 + temps))
+    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + omega0)
+    y = (HEIGHT / 2) - rayon_cercle * math.sin((omega * temps) + omega0)
     return x, y
 
 def move():
