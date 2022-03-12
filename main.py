@@ -41,10 +41,10 @@ def move():
 def trace_polyrythme(NOMBRE_DE_RYTHME):
     """Trace un motif polyrythmique avec un nombre N de mesures"""
     liste_points = []
-    alpha = math.pi / 2
+    alpha = (3 * math.pi) / 2
     color = random.choice(LISTE_COULEUR)
 
-    while alpha <= (2 * math.pi) + (math.pi / 2):
+    while alpha <= (2 * math.pi) + ((3 * math.pi) / 2):
         x = (WIDTH / 2) + rayon_cercle * math.cos(alpha)
         y = (HEIGHT / 2) - rayon_cercle * math.sin(alpha)
         liste_points.append([x, y])
@@ -53,7 +53,7 @@ def trace_polyrythme(NOMBRE_DE_RYTHME):
     for i in range(len(liste_points)):
         screen.create_line(liste_points[i-1][0], liste_points[i-1][1], liste_points[i][0], liste_points[i][1], fill=color)
 
-# # # Boucle Tkinter # # #
+#-#-# Boucle Tkinter #-#-#
 
 root = tk.Tk()
 root.title("aaaaaaaaaaaaaaaaaaa")
@@ -62,7 +62,7 @@ screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
 cercle = screen.create_oval(((WIDTH / 2) - rayon_cercle), ((HEIGHT / 2) - rayon_cercle), ((WIDTH / 2) + rayon_cercle), ((HEIGHT / 2) + rayon_cercle), outline="#2FA0FF")
 objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 
-trace_polyrythme(4)
+trace_polyrythme(5)
 move()
 
 screen.grid(column=0, row=0, rowspan=4)
