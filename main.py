@@ -10,8 +10,8 @@ WIDTH = 1200
 HEIGHT = 1200
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) / 2
-omega = math.pi / 2
-omega0 = (3 * math.pi) / 2
+omega = math.pi / 8 #vitesse angulaire
+theta0 = (3 * math.pi) / 2 #angle de départ
 dt = 0.02 #secondes
 taille_objet = 20
 temps_rotation = (2 * math.pi) / omega #secondes
@@ -24,8 +24,8 @@ LISTE_COULEUR =["#D6ECFF", "#CCE8FF", "#C5E5FF", "#BFE2FF", "#B8DFFF", "#A8D7FF"
 #-#-# Fonctions #-#-#
 
 def coord_temps(temps):
-    """Calcule les coordonnées de la boule du temps"""
-    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + omega0)
+    """Calcule les coordonnées de la boule à un instant donné"""
+    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + theta0)
     y = (HEIGHT / 2) + rayon_cercle * math.sin((omega * temps) + math.pi/2)
 
     return x, y
@@ -141,8 +141,9 @@ screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
 cercle = screen.create_oval(((WIDTH / 2) - rayon_cercle), ((HEIGHT / 2) - rayon_cercle), ((WIDTH / 2) + rayon_cercle), ((HEIGHT / 2) + rayon_cercle), outline="#2FA0FF")
 objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 
-for i in range(3,7):
-    trace_polyrythme(i)
+#for i in range(3,7):
+    #trace_polyrythme(i)
+trace_polyrythme(3)
 move()
 
 screen.grid(column=0, row=0, rowspan=4)
