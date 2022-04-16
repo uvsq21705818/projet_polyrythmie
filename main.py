@@ -11,7 +11,8 @@ WIDTH = 700
 HEIGHT = 700
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) / 2
-omega = math.pi / 2
+vitesse = 1
+omega = (math.pi / 2) * vitesse
 omega0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
 taille_objet = 20
@@ -19,9 +20,11 @@ temps_rotation = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
+acceleration = 3
+
 
 #COULEURS (c'est juste pour le style)#
-LISTE_COULEUR =["#D6ECFF", "#CCE8FF", "#C5E5FF", "#BFE2FF", "#B8DFFF", "#A8D7FF", "#A1D4FF", "#95CFFF", "#8ACAFF", "#80C5FF"]
+LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
 
 #-#-# Fonctions #-#-#
 
@@ -51,7 +54,6 @@ def move():
         temps += dt
         screen.after(int(dt*1000), move)
 
-
 def trace_polyrythme(NOMBRE_DE_RYTHME):
     """Trace un motif polyrythmique avec un nombre N de mesures"""
     liste_points = []
@@ -67,7 +69,6 @@ def trace_polyrythme(NOMBRE_DE_RYTHME):
         n +=1
 
     nombre_sommet = len(liste_points)
-
     nombre_de_coordonnees_rythme = temps_rotation // dt
 
     ### Pour n'avoir aucun décalage il faut le nombre de coordonées et le nobre de sommet soit entiers entre eux:
@@ -81,16 +82,19 @@ def trace_polyrythme(NOMBRE_DE_RYTHME):
         screen.create_line(liste_points[i-1][0], liste_points[i-1][1], liste_points[i][0], liste_points[i][1], fill=color)
 
         for j in range(nombre_de_coordonnees_segment):
-            if i == len(liste_points)-1:
-                coord_x = liste_points[i][0] + (j/nombre_de_coordonnees_segment) * (liste_points[0][0] - liste_points[i][0])
-                coord_y = liste_points[i][1] + (j/nombre_de_coordonnees_segment) * (liste_points[0][1] - liste_points[i][1])
+
+            accel = (math.exp(acceleration * ((j+1)/nombre_de_coordonnees_segment)) / math.exp(acceleration)) * ((j+1) / nombre_de_coordonnees_segment)
+
+            if i == nombre_sommet-1:
+                coord_x = liste_points[i][0] + (liste_points[0][0] - liste_points[i][0]) * accel
+                coord_y = liste_points[i][1] + (liste_points[0][1] - liste_points[i][1]) * accel
                 liste_coord.append([coord_x, coord_y])
             else:
-                coord_x = liste_points[i][0] + (j/nombre_de_coordonnees_segment) * (liste_points[i+1][0] - liste_points[i][0])
-                coord_y = liste_points[i][1] + (j/nombre_de_coordonnees_segment) * (liste_points[i+1][1] - liste_points[i][1])
+                coord_x = liste_points[i][0] + (liste_points[i+1][0] - liste_points[i][0]) * accel
+                coord_y = liste_points[i][1] + (liste_points[i+1][1] - liste_points[i][1]) * accel
                 liste_coord.append([coord_x, coord_y])
 
-    objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#A2B5C7")
+    objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill=color)
     liste_rythme = [objet, 0, liste_coord, liste_points]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
@@ -165,7 +169,7 @@ cercle = screen.create_oval(((WIDTH / 2) - rayon_cercle), ((HEIGHT / 2) - rayon_
 objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
-for i in range(2,10):
+for i in range(3,5):
     trace_polyrythme(i)
 move()
 
