@@ -7,20 +7,20 @@ import random
 
 #-#-# Constantes #-#-#
 
-WIDTH = 700
-HEIGHT = 700
+WIDTH = 800
+HEIGHT = 800
 temps = 0
-rayon_cercle = (min(WIDTH, HEIGHT) / 2) / 2
-vitesse = 1
+rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
+vitesse = 2 
 omega = (math.pi / 2) * vitesse
-omega0 = (3 * math.pi) / 2
+theta0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
 taille_objet = 20
-temps_rotation = (2 * math.pi) / omega #secondes
+periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 3
+acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
 
 
 #COULEURS (c'est juste pour le style)#
@@ -30,14 +30,14 @@ LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
 
 def coord_temps(temps):
     """Calcule les coordonnées de la boule à un instant donné"""
-    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + omega0)
+    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + theta0)
     y = (HEIGHT / 2) + rayon_cercle * math.sin((omega * temps) + math.pi/2)
 
     return x, y
 
 
-def move():
-    """Permet de faire bouger la boule du temps"""
+def move_temps():
+    """Bouge les boules"""
     global temps, tours
 
     if is_paused == False:
@@ -45,57 +45,61 @@ def move():
         dy = (coord_temps(temps + dt)[1] - coord_temps(temps)[1])
 
         for i in range(len(LISTE_POLYRYTHMES)):
-            Rythme(LISTE_POLYRYTHMES[i]).move(LISTE_POLYRYTHMES[i])
+            Rythme(LISTE_POLYRYTHMES[i]).move_rythm(LISTE_POLYRYTHMES[i])
 
-        if temps - temps_rotation * tours > temps_rotation:
+        if temps - periode * tours > periode:
             tours +=1
 
         screen.move(objet_temps, dx, dy)
         temps += dt
-        screen.after(int(dt*1000), move)
+        screen.after(int(dt*1000), move_temps)
 
-def trace_polyrythme(NOMBRE_DE_RYTHME):
+
+def trace_rythme(NOMBRE_DE_RYTHME):
     """Trace un motif polyrythmique avec un nombre N de mesures"""
-    liste_points = []
-    alpha = (3 * math.pi) / 2
+    coord_sommet = []
+    alpha = theta0
     color = random.choice(LISTE_COULEUR)
     n = 0
 
     while n != NOMBRE_DE_RYTHME:
         x = (WIDTH / 2) + rayon_cercle * math.cos(alpha)
         y = (HEIGHT / 2) - rayon_cercle * math.sin(alpha)
-        liste_points.append([x, y])
+        coord_sommet.append([x, y])
         alpha += (2 * math.pi) / NOMBRE_DE_RYTHME
         n +=1
 
-    nombre_sommet = len(liste_points)
-    nombre_de_coordonnees_rythme = temps_rotation // dt
+    nb_sommet = len(coord_sommet)
+    #nombre de positions que peut prendre une boule pour un rythme en un tour
+    nb_positions_rythme = periode // dt 
 
     ### Pour n'avoir aucun décalage il faut le nombre de coordonées et le nobre de sommet soit entiers entre eux:
-    while (nombre_de_coordonnees_rythme % nombre_sommet) != 0:
-        nombre_de_coordonnees_rythme +=1
+    while (nb_positions_rythme % nb_sommet) != 0:
+        nb_positions_rythme +=1
 
-    nombre_de_coordonnees_segment = int(nombre_de_coordonnees_rythme / nombre_sommet)
+    #nb de positions pour un segment
+    nb_coord_1segment = int(nb_positions_rythme / nb_sommet)
     liste_coord = []
 
-    for i in range(nombre_sommet):
-        screen.create_line(liste_points[i-1][0], liste_points[i-1][1], liste_points[i][0], liste_points[i][1], fill=color)
+    for i in range(nb_sommet):
+        screen.create_line(coord_sommet[i-1][0], coord_sommet[i-1][1], coord_sommet[i][0], coord_sommet[i][1], fill=color)
 
-        for j in range(nombre_de_coordonnees_segment):
+        for j in range(nb_coord_1segment):
+            
+            #facteur
+            accel = (math.exp(acceleration * ((j+1)/nb_coord_1segment)) / math.exp(acceleration)) * ((j+1) / nb_coord_1segment)
 
-            accel = (math.exp(acceleration * ((j+1)/nombre_de_coordonnees_segment)) / math.exp(acceleration)) * ((j+1) / nombre_de_coordonnees_segment)
-
-            if i == nombre_sommet-1:
-                coord_x = liste_points[i][0] + (liste_points[0][0] - liste_points[i][0]) * accel
-                coord_y = liste_points[i][1] + (liste_points[0][1] - liste_points[i][1]) * accel
+            if i == nb_sommet-1:
+                coord_x = coord_sommet[i][0] + (coord_sommet[0][0] - coord_sommet[i][0]) * accel
+                coord_y = coord_sommet[i][1] + (coord_sommet[0][1] - coord_sommet[i][1]) * accel
                 liste_coord.append([coord_x, coord_y])
             else:
-                coord_x = liste_points[i][0] + (liste_points[i+1][0] - liste_points[i][0]) * accel
-                coord_y = liste_points[i][1] + (liste_points[i+1][1] - liste_points[i][1]) * accel
+                coord_x = coord_sommet[i][0] + (coord_sommet[i+1][0] - coord_sommet[i][0]) * accel
+                coord_y = coord_sommet[i][1] + (coord_sommet[i+1][1] - coord_sommet[i][1]) * accel
                 liste_coord.append([coord_x, coord_y])
 
     objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill=color)
-    liste_rythme = [objet, 0, liste_coord, liste_points]
+    liste_rythme = [objet, 0, liste_coord, coord_sommet]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
@@ -105,7 +109,7 @@ def pause():
         is_paused = True
     else:
         is_paused = False
-        move()
+        move_temps()
 
 #-#-# Classes #-#-#
 
@@ -133,7 +137,7 @@ class Rythme:
         self.liste_coordonees = liste_coordonees
         self.numero_coordonee = numero_coordonnee
 
-    def move(self, liste):
+    def move_rythm(self, liste):
         global LISTE_POLYRYTHMES
 
         if self.numero_coordonee == len(self.liste_coordonees):
@@ -170,8 +174,8 @@ objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + ray
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
 for i in range(3,5):
-    trace_polyrythme(i)
-move()
+    trace_rythme(i)
+move_temps()
 
 screen.grid(column=0, row=0)
 bouton_pause.grid(row=1)

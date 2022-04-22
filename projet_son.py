@@ -49,7 +49,7 @@ def creer_son(nombre_rythme):
 
     frequence = int(50 * nombre_rythme)
     wav_name = str(frequence) + ".wav"
-    path = r"C:\Users\Lucas\Documents\PYTHON\projet_polyrythmie""\\" +  wav_name
+    path = "Mes Fichiers/Fichiers Linux/POLYRYTHMIE/projet_polyrythmie""//" + wav_name
     out = square_wave(params, frequency=frequence)
     soundfile.save(params, wav_name, out)
 
