@@ -99,7 +99,7 @@ def trace_rythme(NOMBRE_DE_RYTHME):
                 liste_coord.append([coord_x, coord_y])
 
     objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill=color)
-    liste_rythme = [objet, 0, liste_coord, coord_sommet]
+    liste_rythme = [objet, 0, liste_coord, coord_sommet, []]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
@@ -116,11 +116,12 @@ def pause():
 class Rythme:
 
     def __init__(self, liste):
-        """Ici notre objet rythme sera une liste sous la forme [A, N, C, S] avec :
+        """Ici notre objet rythme sera une liste sous la forme [A, N, C, S, T] avec :
         # A l'objet associé à ce rythme,
         # N le numéro des coordonées ou se trouve l'objet (par rapport à la liste des coordonnées)
         # C la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
-        # S les coordonées de chaques sommets (sous la forme [[x1, y1], ..., [xn, yn]])"""
+        # S les coordonées de chaques sommets (sous la forme [[x1, y1], ..., [xn, yn]])
+        # T la liste contenant tout les objets de la trainée (sous la forme [[Objet_1, Durée], ..., [Objet_n, Durée]])"""
 
         liste_points = liste[3].copy()
 
@@ -157,7 +158,23 @@ class Rythme:
         x2 = x + (taille_objet / 2)
         y2 = y + (taille_objet / 2)
 
+        self.trainee()
+
         screen.coords(self.objet, x1, y1, x2, y2)
+
+    def trainee(self):
+        "sale trainée"
+
+        x = self.liste_coordonees[self.numero_coordonee - 1][0]
+        y = self.liste_coordonees[self.numero_coordonee - 1][1]
+
+        x1 = x - (taille_objet / 2)
+        y1 = y - (taille_objet / 2)
+        x2 = x + (taille_objet / 2)
+        y2 = y + (taille_objet / 2)
+
+        screen.create_oval(x1, y1, x2, y2, fill = 'gray')
+
 
     
 
