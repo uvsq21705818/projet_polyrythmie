@@ -11,7 +11,7 @@ WIDTH = 800
 HEIGHT = 800
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
-vitesse = 2 
+vitesse = 4
 omega = (math.pi / 2) * vitesse
 theta0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
@@ -20,8 +20,10 @@ periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-
+acceleration = 3 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 6
+compteur_dt = 0
+longueur_trainee = 20
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -38,7 +40,7 @@ def coord_temps(temps):
 
 def move_temps():
     """Bouge les boules"""
-    global temps, tours
+    global temps, tours, compteur_dt
 
     if is_paused == False:
         dx = (coord_temps(temps + dt)[0] - coord_temps(temps)[0])
@@ -46,20 +48,29 @@ def move_temps():
 
         for i in range(len(LISTE_POLYRYTHMES)):
             Rythme(LISTE_POLYRYTHMES[i]).move_rythm(LISTE_POLYRYTHMES[i])
+            if compteur_dt == vitesse_trainee:
+                Rythme(LISTE_POLYRYTHMES[i]).trainee()
+                
+        if compteur_dt == vitesse_trainee:
+            compteur_dt = 0
 
         if temps - periode * tours > periode:
             tours +=1
 
         screen.move(objet_temps, dx, dy)
         temps += dt
+        compteur_dt += 1
         screen.after(int(dt*1000), move_temps)
 
 
 def trace_rythme(NOMBRE_DE_RYTHME):
     """Trace un motif polyrythmique avec un nombre N de mesures"""
+    global LISTE_COULEUR
+
     coord_sommet = []
     alpha = theta0
     color = random.choice(LISTE_COULEUR)
+    LISTE_COULEUR.remove(color)
     n = 0
 
     while n != NOMBRE_DE_RYTHME:
@@ -99,7 +110,7 @@ def trace_rythme(NOMBRE_DE_RYTHME):
                 liste_coord.append([coord_x, coord_y])
 
     objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill=color)
-    liste_rythme = [objet, 0, liste_coord, coord_sommet, []]
+    liste_rythme = [objet, 0, liste_coord, coord_sommet, [], color]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
@@ -116,27 +127,31 @@ def pause():
 class Rythme:
 
     def __init__(self, liste):
-        """Ici notre objet rythme sera une liste sous la forme [A, N, C, S, T] avec :
+        """Ici notre objet rythme sera une liste sous la forme [A, N, X, S, T] avec :
         # A l'objet associé à ce rythme,
         # N le numéro des coordonées ou se trouve l'objet (par rapport à la liste des coordonnées)
-        # C la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
+        # X la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
         # S les coordonées de chaques sommets (sous la forme [[x1, y1], ..., [xn, yn]])
-        # T la liste contenant tout les objets de la trainée (sous la forme [[Objet_1, Durée], ..., [Objet_n, Durée]])"""
+        # T la liste contenant tout les objets de la trainée (sous la forme [[Objet_1, Durée], ..., [Objet_n, Durée]])
+        # C la couleur associée à ce rythme"""
 
         liste_points = liste[3].copy()
 
         nb_points = len(liste_points)
 
-
         objet = liste[0]
         numero_coordonnee = liste[1]
         liste_coordonees = liste[2]
+        liste_trainee = liste[4]
+        color = liste[5]
 
         self.nb_points= nb_points
         self.liste_points = liste_points
         self.objet = objet
         self.liste_coordonees = liste_coordonees
         self.numero_coordonee = numero_coordonnee
+        self.liste_trainee = liste_trainee
+        self.color = color
 
     def move_rythm(self, liste):
         global LISTE_POLYRYTHMES
@@ -158,9 +173,8 @@ class Rythme:
         x2 = x + (taille_objet / 2)
         y2 = y + (taille_objet / 2)
 
-        self.trainee()
-
         screen.coords(self.objet, x1, y1, x2, y2)
+
 
     def trainee(self):
         "sale trainée"
@@ -173,11 +187,22 @@ class Rythme:
         x2 = x + (taille_objet / 2)
         y2 = y + (taille_objet / 2)
 
-        screen.create_oval(x1, y1, x2, y2, fill = 'gray')
+        cercle_tempor = screen.create_oval(x1, y1, x2, y2, fill = self.color)
+        self.liste_trainee.append([cercle_tempor, longueur_trainee])
 
-
+    #print(self.liste_trainee)
+        
+        if self.liste_trainee[0][1] == 0:
+                screen.delete(self.liste_trainee[0][0])
+                self.liste_trainee.pop(0)
     
 
+        for i in range(len(self.liste_trainee)):
+            self.liste_trainee[i][1] -= 1
+
+        #for objet in self.liste_trainee:
+            #if objet[1] == 0:
+                #self.liste_trainee.pop(0)
 
 
 #-#-# Boucle Tkinter #-#-#
