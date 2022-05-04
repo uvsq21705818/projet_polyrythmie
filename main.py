@@ -11,7 +11,7 @@ WIDTH = 800
 HEIGHT = 800
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
-vitesse = 4
+vitesse = 2
 omega = (math.pi / 2) * vitesse
 theta0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
@@ -20,10 +20,10 @@ periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 3 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 6
+acceleration = 6 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 1
 compteur_dt = 0
-longueur_trainee = 20
+longueur_trainee = 10
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -144,6 +144,7 @@ class Rythme:
         liste_coordonees = liste[2]
         liste_trainee = liste[4]
         color = liste[5]
+        liste_taille_double = []
 
         self.nb_points= nb_points
         self.liste_points = liste_points
@@ -152,6 +153,18 @@ class Rythme:
         self.numero_coordonee = numero_coordonnee
         self.liste_trainee = liste_trainee
         self.color = color
+
+        for i in range(len(self.liste_coordonees)):
+            for sommet in self.liste_points:
+                if self.liste_coordonees[i] == sommet:
+                    liste_taille_double.append(i)
+                    liste_taille_double.append(i-1)
+                    liste_taille_double.append(i+1)
+                    
+
+        
+        self.liste_taille_double = liste_taille_double
+
 
     def move_rythm(self, liste):
         global LISTE_POLYRYTHMES
@@ -168,12 +181,19 @@ class Rythme:
 
             liste[1] += 1
 
-        x1 = x - (taille_objet / 2)
-        y1 = y - (taille_objet / 2)
-        x2 = x + (taille_objet / 2)
-        y2 = y + (taille_objet / 2)
+        if self.numero_coordonee in self.liste_taille_double:
 
-        screen.coords(self.objet, x1, y1, x2, y2)
+            self.double_taille()
+
+        else:
+
+            x1 = x - (taille_objet / 2)
+            y1 = y - (taille_objet / 2)
+            x2 = x + (taille_objet / 2)
+            y2 = y + (taille_objet / 2)
+
+            screen.coords(self.objet, x1, y1, x2, y2)
+
 
 
     def trainee(self):
@@ -203,6 +223,20 @@ class Rythme:
         #for objet in self.liste_trainee:
             #if objet[1] == 0:
                 #self.liste_trainee.pop(0)
+
+    def double_taille(self):
+
+        objet = self.objet
+
+        x0 = screen.coords(objet)[0] - taille_objet
+        y0 = screen.coords(objet)[1] - taille_objet
+        x1 = screen.coords(objet)[2] + taille_objet
+        y1 = screen.coords(objet)[3] + taille_objet
+
+        screen.coords(objet, x0, y0, x1, y1)
+
+        print(x0, y0, x1, y1)
+
 
 
 #-#-# Boucle Tkinter #-#-#
