@@ -4,6 +4,7 @@ from tempfile import tempdir
 import tkinter as tk
 import math
 import random
+import numpy as np
 
 #-#-# Constantes #-#-#
 
@@ -11,7 +12,8 @@ WIDTH = 800
 HEIGHT = 800
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
-vitesse = 2
+centre = (WIDTH/2, HEIGHT/2)
+vitesse = 5
 omega = (math.pi / 2) * vitesse
 theta0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
@@ -20,10 +22,11 @@ periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 6 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 1
+acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 2
 compteur_dt = 0
 longueur_trainee = 10
+durée_grossissement = 40
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -32,8 +35,8 @@ LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
 
 def coord_temps(temps):
     """Calcule les coordonnées de la boule à un instant donné"""
-    x = (WIDTH / 2) + rayon_cercle * math.cos((omega * temps) + theta0)
-    y = (HEIGHT / 2) + rayon_cercle * math.sin((omega * temps) + math.pi/2)
+    x = centre[0] + rayon_cercle * math.cos((omega * temps) + theta0)
+    y = centre[1] + rayon_cercle * math.sin((omega * temps) + math.pi/2)
 
     return x, y
 
@@ -74,12 +77,15 @@ def trace_rythme(NOMBRE_DE_RYTHME):
     n = 0
 
     while n != NOMBRE_DE_RYTHME:
-        x = (WIDTH / 2) + rayon_cercle * math.cos(alpha)
-        y = (HEIGHT / 2) - rayon_cercle * math.sin(alpha)
+        x = centre[0] + rayon_cercle * math.cos(alpha)
+        y = centre[1] - rayon_cercle * math.sin(alpha)
         coord_sommet.append([x, y])
         alpha += (2 * math.pi) / NOMBRE_DE_RYTHME
         n +=1
 
+    print(coord_sommet)
+
+    
     nb_sommet = len(coord_sommet)
     #nombre de positions que peut prendre une boule pour un rythme en un tour
     nb_positions_rythme = periode // dt 
@@ -94,6 +100,7 @@ def trace_rythme(NOMBRE_DE_RYTHME):
 
     for i in range(nb_sommet):
         screen.create_line(coord_sommet[i-1][0], coord_sommet[i-1][1], coord_sommet[i][0], coord_sommet[i][1], fill=color)
+        screen.create_line(centre[0], centre[1], coord_sommet[i-1][0], coord_sommet[i-1][1], fill="gray")
 
         for j in range(nb_coord_1segment):
             
@@ -109,10 +116,33 @@ def trace_rythme(NOMBRE_DE_RYTHME):
                 coord_y = coord_sommet[i][1] + (coord_sommet[i+1][1] - coord_sommet[i][1]) * accel
                 liste_coord.append([coord_x, coord_y])
 
-    objet = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill=color)
+    objet = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill=color)
     liste_rythme = [objet, 0, liste_coord, coord_sommet, [], color]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
+
+
+def cercle_bis(sommet):
+    
+    #for i in range(2):
+    x0 = abs(sommet[i][0] - centre[0])
+    y0 = abs(sommet[i][1] - centre[1])
+    med0 = [x0/2, y0/2]
+    pente_ortho0 = x0 / y0
+
+
+    x1 = abs(sommet[1][0] - centre[0])
+    y1 = abs(sommet[1][1] - centre[1])  
+    med1 = [x1/2, y1/2]
+    pente_ortho1 = x1 / y1
+    
+    a = np.array([pente_ortho0, -1], [pente_ortho1, -1])
+    b = np.array([-med0[1]+pente_ortho0*med0[0]], [-med1[1]+pente_ortho1*med1[0]])
+
+    sol = np.linalg.solve(a, b)
+
+    return [sol[0], sol[1]]
+
 
 def pause():
     global is_paused
@@ -127,7 +157,7 @@ def pause():
 class Rythme:
 
     def __init__(self, liste):
-        """Ici notre objet rythme sera une liste sous la forme [A, N, X, S, T] avec :
+        """Ici notre objet rythme sera une liste sous la forme [A, N, X, S, T, C] avec :
         # A l'objet associé à ce rythme,
         # N le numéro des coordonées ou se trouve l'objet (par rapport à la liste des coordonnées)
         # X la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
@@ -145,6 +175,7 @@ class Rythme:
         liste_trainee = liste[4]
         color = liste[5]
         liste_taille_double = []
+        liste_gros = []
 
         self.nb_points= nb_points
         self.liste_points = liste_points
@@ -157,13 +188,13 @@ class Rythme:
         for i in range(len(self.liste_coordonees)):
             for sommet in self.liste_points:
                 if self.liste_coordonees[i] == sommet:
-                    liste_taille_double.append(i)
-                    liste_taille_double.append(i-1)
-                    liste_taille_double.append(i+1)
-                    
-
+                    liste_taille_double.append(i-durée_grossissement)
+                    for j in range((-1)*durée_grossissement + 1, durée_grossissement + 1):
+                        liste_gros.append(i+j)
         
+                    
         self.liste_taille_double = liste_taille_double
+        self.liste_gros = liste_gros
 
 
     def move_rythm(self, liste):
@@ -185,6 +216,13 @@ class Rythme:
 
             self.double_taille()
 
+        elif self.numero_coordonee in self.liste_gros: 
+            x1 = x - taille_objet
+            y1 = y - taille_objet
+            x2 = x + taille_objet
+            y2 = y + taille_objet
+
+            screen.coords(self.objet, x1, y1, x2, y2)
         else:
 
             x1 = x - (taille_objet / 2)
@@ -228,14 +266,14 @@ class Rythme:
 
         objet = self.objet
 
-        x0 = screen.coords(objet)[0] - taille_objet
-        y0 = screen.coords(objet)[1] - taille_objet
-        x1 = screen.coords(objet)[2] + taille_objet
-        y1 = screen.coords(objet)[3] + taille_objet
+        x0 = screen.coords(objet)[0] - taille_objet/2
+        y0 = screen.coords(objet)[1] - taille_objet/2
+        x1 = screen.coords(objet)[2] + taille_objet/2
+        y1 = screen.coords(objet)[3] + taille_objet/2
 
         screen.coords(objet, x0, y0, x1, y1)
 
-        print(x0, y0, x1, y1)
+
 
 
 
@@ -245,11 +283,11 @@ root = tk.Tk()
 root.title("aaaaaaaaaaaaaaaaaaa")
 
 screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
-cercle = screen.create_oval(((WIDTH / 2) - rayon_cercle), ((HEIGHT / 2) - rayon_cercle), ((WIDTH / 2) + rayon_cercle), ((HEIGHT / 2) + rayon_cercle), outline="#2FA0FF")
-objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
+cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercle), (centre[0] + rayon_cercle), (centre[1] + rayon_cercle), outline="#2FA0FF")
+objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
-for i in range(3,5):
+for i in range(3,6):
     trace_rythme(i)
 move_temps()
 
