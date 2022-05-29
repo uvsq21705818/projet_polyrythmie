@@ -287,11 +287,6 @@ cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercl
 objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
-<<<<<<< HEAD
-trace_polyrythme(4)
-move()
-screen.grid(column=0, row=0, rowspan=4)
-=======
 for i in range(3,6):
     trace_rythme(i)
 move_temps()
@@ -300,4 +295,3 @@ screen.grid(column=0, row=0)
 bouton_pause.grid(row=1)
 
 root.mainloop()
->>>>>>> ecc9a88e9b680ecf525a4557e0974449c797ad93
