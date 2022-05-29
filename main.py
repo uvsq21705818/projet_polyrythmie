@@ -1,13 +1,14 @@
-#NK####
+#NK####aaaaaaaaaaaaaaaaaaaaa
 
 import tkinter as tk
 import math
 import random
+from turtle import left, right
 
 #-#-# Constantes #-#-#
 
-WIDTH = 1200
-HEIGHT = 1200
+WIDTH = 600
+HEIGHT = 600
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) / 2
 omega = math.pi / 2
@@ -141,10 +142,6 @@ screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
 cercle = screen.create_oval(((WIDTH / 2) - rayon_cercle), ((HEIGHT / 2) - rayon_cercle), ((WIDTH / 2) + rayon_cercle), ((HEIGHT / 2) + rayon_cercle), outline="#2FA0FF")
 objet_temps = screen.create_oval((WIDTH/2) - (taille_objet/2), ((HEIGHT/2) + rayon_cercle) - (taille_objet/2), (WIDTH/2) + (taille_objet/2), ((HEIGHT/2) + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 
-for i in range(3,7):
-    trace_polyrythme(i)
+trace_polyrythme(4)
 move()
-
 screen.grid(column=0, row=0, rowspan=4)
-
-root.mainloop()
