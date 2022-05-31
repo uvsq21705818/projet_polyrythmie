@@ -22,10 +22,10 @@ periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 5 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
 vitesse_trainee = 5
 compteur_dt = 0
-longueur_trainee = 13
+longueur_trainee = 3
 durée_grossissement = 10
 grossisement = False
 
@@ -85,8 +85,6 @@ def trace_rythme(NOMBRE_DE_RYTHME):
         alpha += (2 * math.pi) / NOMBRE_DE_RYTHME
         n +=1
 
-
-
     
     nb_sommet = len(coord_sommet)
     #nombre de positions que peut prendre une boule pour un rythme en un tour
@@ -118,8 +116,11 @@ def trace_rythme(NOMBRE_DE_RYTHME):
     liste_coord = []
 
     for i in range(nb_sommet):
+
         screen.create_line(coord_sommet[i-1][0], coord_sommet[i-1][1], coord_sommet[i][0], coord_sommet[i][1], fill=color)
         screen.create_line(centre[0], centre[1], coord_sommet[i-1][0], coord_sommet[i-1][1], fill="gray")
+
+    
 
         if i == nb_sommet-1 and correction_nombre_coordonnee != 0:
             
@@ -320,11 +321,14 @@ cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercl
 objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
-for i in range(3,5):
-    trace_rythme(i)
-move_temps()
+if LISTE_POLYRYTHMES == []:
+    for i in range(3,6):
+        trace_rythme(i)
+    move_temps()
 
 screen.grid(column=0, row=0)
 bouton_pause.grid(row=1)
+
+print()
 
 root.mainloop()
