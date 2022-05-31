@@ -13,7 +13,7 @@ HEIGHT = 600
 temps = 0
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
 centre = (WIDTH/2, HEIGHT/2)
-vitesse = 3
+vitesse = 2
 omega = (math.pi / 2) * vitesse
 theta0 = (3 * math.pi) / 2
 dt = 0.001 #secondes
@@ -22,11 +22,12 @@ periode = (2 * math.pi) / omega #secondes
 tours = 0
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 0 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 2
+acceleration = 5 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 5
 compteur_dt = 0
-longueur_trainee = 0
-durée_grossissement = 0
+longueur_trainee = 13
+durée_grossissement = 10
+grossisement = False
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -218,12 +219,14 @@ class Rythme:
         self.liste_trainee = liste_trainee
         self.color = color
 
-        for i in range(len(self.liste_coordonees)):
-            for sommet in self.liste_points:
-                if self.liste_coordonees[i] == sommet:
-                    liste_taille_double.append(i-durée_grossissement)
-                    for j in range((-1)*durée_grossissement + 1, durée_grossissement + 1):
-                        liste_gros.append(i+j)
+        if grossisement == True:
+
+            for i in range(len(self.liste_coordonees)):
+                for sommet in self.liste_points:
+                    if self.liste_coordonees[i] == sommet:
+                        liste_taille_double.append(i-durée_grossissement)
+                        for j in range((-1)*durée_grossissement + 1, durée_grossissement + 1):
+                            liste_gros.append(i+j)
         
                     
         self.liste_taille_double = liste_taille_double
