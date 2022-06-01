@@ -27,7 +27,11 @@ vitesse_trainee = 5
 compteur_dt = 0
 longueur_trainee = 3
 durée_grossissement = 10
-grossisement = False
+
+##Grossissement c'est pas très beau et ça fait bugger le programme
+afficher_grossisement = False
+
+afficher_rebond = True
 duree_de_vie_rebond = 30
 
 #COULEURS (c'est juste pour le style)#
@@ -224,7 +228,7 @@ class Rythme:
         self.color = color
         self.rebond = rebond
 
-        if grossisement == True:
+        if afficher_grossisement == True:
 
             for i in range(len(self.liste_coordonees)):
                 for sommet in self.liste_points:
@@ -243,29 +247,31 @@ class Rythme:
 
         ##REBOND
 
-        if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
-            x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
-            y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
-            cercle = screen.create_oval(x_rebond + 5, y_rebond + 5, x_rebond - 5, y_rebond - 5, width=(duree_de_vie_rebond/5), outline=self.color)
-            self.rebond.append([cercle, duree_de_vie_rebond])
+        if afficher_rebond == True:
 
-        for objet in self.rebond:
-            if objet[1] >= 0:
-                x1_objet = screen.coords(objet[0])[0] - 0.1
-                y1_objet = screen.coords(objet[0])[1] - 0.1
-                x2_objet = screen.coords(objet[0])[2] + 0.1
-                y2_objet = screen.coords(objet[0])[3] + 0.1
+            if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
+                x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
+                y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
+                cercle = screen.create_oval(x_rebond + 5, y_rebond + 5, x_rebond - 5, y_rebond - 5, width=(duree_de_vie_rebond/5), outline=self.color)
+                self.rebond.append([cercle, duree_de_vie_rebond])
 
-                epaisseur_objet = objet[1]/5
+            for objet in self.rebond:
+                if objet[1] >= 0:
+                    x1_objet = screen.coords(objet[0])[0] - 0.1
+                    y1_objet = screen.coords(objet[0])[1] - 0.1
+                    x2_objet = screen.coords(objet[0])[2] + 0.1
+                    y2_objet = screen.coords(objet[0])[3] + 0.1
 
-                objet[1] -= 0.1
+                    epaisseur_objet = objet[1]/5
 
-                screen.coords(objet[0], x1_objet, y1_objet, x2_objet, y2_objet)
-                screen.itemconfig(objet[0], width=epaisseur_objet)
+                    objet[1] -= 0.1
 
-            else:
-                screen.delete(objet[0])
-                self.rebond.remove(objet)
+                    screen.coords(objet[0], x1_objet, y1_objet, x2_objet, y2_objet)
+                    screen.itemconfig(objet[0], width=epaisseur_objet)
+
+                else:
+                    screen.delete(objet[0])
+                    self.rebond.remove(objet)
 
         ##COORDONNEES
 
