@@ -4,7 +4,7 @@ from tempfile import tempdir
 import tkinter as tk
 import math
 import random
-from turtle import left, right
+from turtle import left, right, width
 
 #-#-# Constantes #-#-#
 
@@ -28,6 +28,7 @@ compteur_dt = 0
 longueur_trainee = 3
 durée_grossissement = 10
 grossisement = False
+duree_de_vie_rebond = 30
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -152,7 +153,7 @@ def trace_rythme(NOMBRE_DE_RYTHME):
                     liste_coord.append([coord_x, coord_y])
 
     objet = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill=color)
-    liste_rythme = [objet, 0, liste_coord, coord_sommet, [], color]
+    liste_rythme = [objet, 0, liste_coord, coord_sommet, [], color, []]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
@@ -198,7 +199,8 @@ class Rythme:
         # X la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
         # S les coordonées de chaques sommets (sous la forme [[x1, y1], ..., [xn, yn]])
         # T la liste contenant tout les objets de la trainée (sous la forme [[Objet_1, Durée], ..., [Objet_n, Durée]])
-        # C la couleur associée à ce rythme"""
+        # C la couleur associée à ce rythme
+        # G la liste contenant les objets des rebond"""
 
         liste_points = liste[3].copy()
 
@@ -211,6 +213,7 @@ class Rythme:
         color = liste[5]
         liste_taille_double = []
         liste_gros = []
+        rebond = liste[6]
 
         self.nb_points= nb_points
         self.liste_points = liste_points
@@ -219,6 +222,7 @@ class Rythme:
         self.numero_coordonee = numero_coordonnee
         self.liste_trainee = liste_trainee
         self.color = color
+        self.rebond = rebond
 
         if grossisement == True:
 
@@ -236,6 +240,33 @@ class Rythme:
 
     def move_rythm(self, liste):
         global LISTE_POLYRYTHMES
+
+        ##REBOND
+
+        if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
+            x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
+            y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
+            cercle = screen.create_oval(x_rebond + 5, y_rebond + 5, x_rebond - 5, y_rebond - 5, width=(duree_de_vie_rebond/5), outline=self.color)
+            self.rebond.append([cercle, duree_de_vie_rebond])
+
+        for objet in self.rebond:
+            if objet[1] >= 0:
+                x1_objet = screen.coords(objet[0])[0] - 0.1
+                y1_objet = screen.coords(objet[0])[1] - 0.1
+                x2_objet = screen.coords(objet[0])[2] + 0.1
+                y2_objet = screen.coords(objet[0])[3] + 0.1
+
+                epaisseur_objet = objet[1]/5
+
+                objet[1] -= 0.1
+
+                screen.coords(objet[0], x1_objet, y1_objet, x2_objet, y2_objet)
+                screen.itemconfig(objet[0], width=epaisseur_objet)
+
+            else:
+                screen.delete(objet[0])
+
+        ##COORDONNEES
 
         if self.numero_coordonee == len(self.liste_coordonees):
             x = self.liste_coordonees[0][0]
@@ -321,10 +352,13 @@ cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercl
 objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
 bouton_pause = tk.Button(text="PAUSE", command=pause)
 
-if LISTE_POLYRYTHMES == []:
-    for i in range(3,6):
-        trace_rythme(i)
-    move_temps()
+
+
+for i in range(3,6):
+    trace_rythme(i)
+
+move_temps()
+
 
 screen.grid(column=0, row=0)
 bouton_pause.grid(row=1)
