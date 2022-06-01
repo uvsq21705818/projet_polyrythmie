@@ -265,6 +265,7 @@ class Rythme:
 
             else:
                 screen.delete(objet[0])
+                self.rebond.remove(objet)
 
         ##COORDONNEES
 
