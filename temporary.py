@@ -22,7 +22,7 @@ rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
 centre = (WIDTH / 2, HEIGHT / 2)
 taille_objet = rayon_cercle / 12 #diamètre d'une boule
 theta0 = (3 * math.pi) / 2
-rythmes = {4,7}
+rythmes = {3,4}
 moyenne_des_rythmes = sum(rythmes)/len(rythmes)
 son = False
 
@@ -33,9 +33,9 @@ compteur_dt = 1
 
 #VARIABLES 
 vitesse = 3
-acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+acceleration = 0 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
 vitesse_trainee = 2
-longueur_trainee = 10
+longueur_trainee = 5
 durée_grossissement = 10
 
 omega = (math.pi / 2) * vitesse
@@ -100,6 +100,7 @@ def move_temps():
         screen.move(objet_temps, dx, dy)
         temps += dt
         compteur_dt += 1
+        
 
         screen.after(int(dt*1000), move_temps)
 
@@ -309,8 +310,8 @@ class Rythme:
 
                 elif son == True:
                     winsound.PlaySound(creer_son(moyenne_des_rythmes), winsound.SND_ASYNC | winsound.SND_ALIAS)
-                    print("SON")
                     son = False
+                    
                 
 
                 x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
@@ -339,10 +340,10 @@ class Rythme:
         ##COORDONNEES
 
         if self.numero_coordonee == len(self.liste_coordonees):
-            x = self.liste_coordonees[0][0]
-            y = self.liste_coordonees[0][1]
+            x = self.liste_coordonees[1][0]
+            y = self.liste_coordonees[1][1]
 
-            liste[1] = 0
+            liste[1] = 1
 
         else:
             x = self.liste_coordonees[self.numero_coordonee][0]
