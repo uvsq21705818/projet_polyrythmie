@@ -1,11 +1,17 @@
 #NK####aaaaaaaaaaaaaaaaaaaaa
 
-from tempfile import tempdir
 import tkinter as tk
 import math
 import random
 from tkinter import colorchooser
 from turtle import left, right, width
+import winsound
+from pysound.buffer import BufferParams
+from pysound.oscillators import sine_wave
+from pysound.oscillators import square_wave
+from pysound import soundfile
+
+params = BufferParams(length=2205)
 
 #-#-# Constantes #-#-#
 
@@ -14,18 +20,21 @@ HEIGHT = 900
 dt = 0.001 #secondes
 rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
 centre = (WIDTH / 2, HEIGHT / 2)
-taille_objet = rayon_cercle / 10 #diamètre d'une boule
+taille_objet = rayon_cercle / 12 #diamètre d'une boule
 theta0 = (3 * math.pi) / 2
+rythmes = {4,7}
+moyenne_des_rythmes = sum(rythmes)/len(rythmes)
+son = False
 
 #COMPTEURS
 temps = 0
 tours = 0
-compteur_dt = 0
+compteur_dt = 1
 
 #VARIABLES 
-vitesse = 2
+vitesse = 3
 acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 6
+vitesse_trainee = 2
 longueur_trainee = 10
 durée_grossissement = 10
 
@@ -40,11 +49,24 @@ afficher_grossisement = False
 
 afficher_rebond = True
 duree_de_vie_rebond = 50
+vitesse_rebond = 0.5
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
 
 #-#-# Fonctions #-#-#
+
+def creer_son(nombre_rythme):
+    """Créer un son selon le nombre de rythme et renvoie le nom de ce son qui pourra être utilisé"""
+
+    frequence = int(50 * nombre_rythme)
+    wav_name = str(frequence) + ".wav"
+    path = r"C:\Users\Lucas\Documents\PYTHON\projet_polyrythmie""\\" +  wav_name
+    out = square_wave(params, frequency=frequence)
+    soundfile.save(params, wav_name, out)
+
+
+    return wav_name
 
 def coord_temps(temps):
     """Calcule les coordonnées de la boule à un instant donné"""
@@ -78,6 +100,7 @@ def move_temps():
         screen.move(objet_temps, dx, dy)
         temps += dt
         compteur_dt += 1
+
         screen.after(int(dt*1000), move_temps)
 
 
@@ -126,6 +149,9 @@ def trace_rythme(NOMBRE_DE_RYTHME):
     if nb_coord_1segment * nb_sommet != int(nb_positions_rythme):
         correction_nombre_coordonnee = int(nb_positions_rythme) - nb_coord_1segment * nb_sommet
 
+    else:
+        correction_nombre_coordonnee = 0
+
 
     for i in range(nb_sommet):
 
@@ -151,11 +177,18 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
                 
             for j in range(coord_par_seg + corr):
 
-                accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
+                if j == 0:
+                    coord_x = co_som[i][0]
+                    coord_y = co_som[i][1]
+                    liste_coord.append([coord_x, coord_y])
 
-                coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
-                coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
-                liste_coord.append([coord_x, coord_y])
+                else:
+
+                    accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
+
+                    coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
+                    coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
+                    liste_coord.append([coord_x, coord_y])
 
         else:
             for j in range(coord_par_seg):
@@ -260,13 +293,26 @@ class Rythme:
 
 
     def move_rythm(self, liste):
-        global LISTE_POLYRYTHMES
+        global LISTE_POLYRYTHMES, son
 
         ##REBOND
 
         if afficher_rebond == True:
 
             if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
+
+            
+
+                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0]: 
+                    winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    son = True
+
+                elif son == True:
+                    winsound.PlaySound(creer_son(moyenne_des_rythmes), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    print("SON")
+                    son = False
+                
+
                 x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
                 y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
                 cercle = screen.create_oval(x_rebond + 5, y_rebond + 5, x_rebond - 5, y_rebond - 5, width=(duree_de_vie_rebond/5), outline=self.color)
@@ -274,14 +320,14 @@ class Rythme:
 
             for objet in self.rebond:
                 if objet[1] >= 0:
-                    x1_objet = screen.coords(objet[0])[0] - 0.1
-                    y1_objet = screen.coords(objet[0])[1] - 0.1
-                    x2_objet = screen.coords(objet[0])[2] + 0.1
-                    y2_objet = screen.coords(objet[0])[3] + 0.1
+                    x1_objet = screen.coords(objet[0])[0] - vitesse_rebond
+                    y1_objet = screen.coords(objet[0])[1] - vitesse_rebond
+                    x2_objet = screen.coords(objet[0])[2] + vitesse_rebond
+                    y2_objet = screen.coords(objet[0])[3] + vitesse_rebond
 
                     epaisseur_objet = objet[1]/5
 
-                    objet[1] -= 0.1
+                    objet[1] -= vitesse_rebond
 
                     screen.coords(objet[0], x1_objet, y1_objet, x2_objet, y2_objet)
                     screen.itemconfig(objet[0], width = epaisseur_objet)
@@ -375,7 +421,7 @@ bouton_pause = tk.Button(text="PAUSE", command=pause)
 
 
 
-for i in range(3,6):
+for i in rythmes:
     trace_rythme(i)
 
 move_temps()
