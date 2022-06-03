@@ -1,38 +1,44 @@
 #NK####aaaaaaaaaaaaaaaaaaaaa
 
-from tempfile import tempdir
 import tkinter as tk
 import math
 import random
+from tkinter import colorchooser
 from turtle import left, right, width
 
 #-#-# Constantes #-#-#
 
-WIDTH = 600
-HEIGHT = 600
-temps = 0
-rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
-centre = (WIDTH/2, HEIGHT/2)
-vitesse = 2
-omega = (math.pi / 2) * vitesse
-theta0 = (3 * math.pi) / 2
+WIDTH = 900
+HEIGHT = 900
 dt = 0.001 #secondes
-taille_objet = 20
-periode = (2 * math.pi) / omega #secondes
+rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
+centre = (WIDTH / 2, HEIGHT / 2)
+taille_objet = rayon_cercle / 10 #diamètre d'une boule
+theta0 = (3 * math.pi) / 2
+
+#COMPTEURS
+temps = 0
 tours = 0
+compteur_dt = 0
+
+#VARIABLES 
+vitesse = 2
+acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 6
+longueur_trainee = 10
+durée_grossissement = 10
+
+omega = (math.pi / 2) * vitesse
+periode = (2 * math.pi) / omega #secondes
+
 LISTE_POLYRYTHMES = []
 is_paused = False
-acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 5
-compteur_dt = 0
-longueur_trainee = 3
-durée_grossissement = 10
 
 ##Grossissement c'est pas très beau et ça fait bugger le programme
 afficher_grossisement = False
 
 afficher_rebond = True
-duree_de_vie_rebond = 30
+duree_de_vie_rebond = 50
 
 #COULEURS (c'est juste pour le style)#
 LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
@@ -52,6 +58,7 @@ def move_temps():
     global temps, tours, compteur_dt
 
     if is_paused == False:
+        #pour l'objet temps
         dx = (coord_temps(temps + dt)[0] - coord_temps(temps)[0])
         dy = (coord_temps(temps + dt)[1] - coord_temps(temps)[1])
 
@@ -118,48 +125,57 @@ def trace_rythme(NOMBRE_DE_RYTHME):
     if nb_coord_1segment * nb_sommet != int(nb_positions_rythme):
         correction_nombre_coordonnee = int(nb_positions_rythme) - nb_coord_1segment * nb_sommet
 
-    liste_coord = []
 
     for i in range(nb_sommet):
 
         screen.create_line(coord_sommet[i-1][0], coord_sommet[i-1][1], coord_sommet[i][0], coord_sommet[i][1], fill=color)
         screen.create_line(centre[0], centre[1], coord_sommet[i-1][0], coord_sommet[i-1][1], fill="gray")
 
+    liste_coord = calcul_coord(nb_sommet, correction_nombre_coordonnee, nb_coord_1segment, coord_sommet)
+
     
-
-        if i == nb_sommet-1 and correction_nombre_coordonnee != 0:
-            
-            for j in range(nb_coord_1segment + correction_nombre_coordonnee):
-
-                accel = (math.exp(acceleration * ((j+1)/nb_coord_1segment)) / math.exp(acceleration)) * ((j+1) / nb_coord_1segment)
-
-                coord_x = coord_sommet[i][0] + (coord_sommet[0][0] - coord_sommet[i][0]) * accel
-                coord_y = coord_sommet[i][1] + (coord_sommet[0][1] - coord_sommet[i][1]) * accel
-                liste_coord.append([coord_x, coord_y])
-
-
-        else:
-            for j in range(nb_coord_1segment):
-                
-                #facteur
-                accel = (math.exp(acceleration * ((j+1)/nb_coord_1segment)) / math.exp(acceleration)) * ((j+1) / nb_coord_1segment)
-
-                if i == nb_sommet-1:
-                    
-                    coord_x = coord_sommet[i][0] + (coord_sommet[0][0] - coord_sommet[i][0]) * accel
-                    coord_y = coord_sommet[i][1] + (coord_sommet[0][1] - coord_sommet[i][1]) * accel
-                    liste_coord.append([coord_x, coord_y])
-
-                else:
-
-                    coord_x = coord_sommet[i][0] + (coord_sommet[i+1][0] - coord_sommet[i][0]) * accel
-                    coord_y = coord_sommet[i][1] + (coord_sommet[i+1][1] - coord_sommet[i][1]) * accel
-                    liste_coord.append([coord_x, coord_y])
-
     objet = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill=color)
     liste_rythme = [objet, 0, liste_coord, coord_sommet, [], color, []]
 
     LISTE_POLYRYTHMES.append(liste_rythme)
+
+
+def calcul_coord (n, corr, coord_par_seg, co_som):
+    """retourne une liste contenant toutes les positions de la boule pour un polygone à n sommets, 
+    avec une certaine correction corr, et un nombre de coordonnées par segement déja défini, la liste
+    des coordonnées des sommets déjà connue,  en tenant compte de l'acceleration"""
+    liste_coord = []
+    for  i in range(n):
+        if i == n-1 and corr != 0:
+                
+            for j in range(coord_par_seg + corr):
+
+                accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
+
+                coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
+                coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
+                liste_coord.append([coord_x, coord_y])
+
+        else:
+            for j in range(coord_par_seg):
+                
+                #facteur
+                accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
+
+                if i == n-1:
+                    
+                    coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
+                    coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
+                    liste_coord.append([coord_x, coord_y])
+
+                else:
+
+                    coord_x = co_som[i][0] + (co_som[i+1][0] - co_som[i][0]) * accel
+                    coord_y = co_som[i][1] + (co_som[i+1][1] - co_som[i][1]) * accel
+                    liste_coord.append([coord_x, coord_y])
+
+    return liste_coord
+
 
 
 def cercle_bis(sommet):
@@ -267,7 +283,7 @@ class Rythme:
                     objet[1] -= 0.1
 
                     screen.coords(objet[0], x1_objet, y1_objet, x2_objet, y2_objet)
-                    screen.itemconfig(objet[0], width=epaisseur_objet)
+                    screen.itemconfig(objet[0], width = epaisseur_objet)
 
                 else:
                     screen.delete(objet[0])
@@ -292,38 +308,28 @@ class Rythme:
             self.double_taille()
 
         elif self.numero_coordonee in self.liste_gros: 
-            x1 = x - taille_objet
-            y1 = y - taille_objet
-            x2 = x + taille_objet
-            y2 = y + taille_objet
+            x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet)
 
             screen.coords(self.objet, x1, y1, x2, y2)
-        else:
 
-            x1 = x - (taille_objet / 2)
-            y1 = y - (taille_objet / 2)
-            x2 = x + (taille_objet / 2)
-            y2 = y + (taille_objet / 2)
+        else: 
+            x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
 
             screen.coords(self.objet, x1, y1, x2, y2)
 
 
 
     def trainee(self):
-        "sale trainée"
+        """sale trainée"""
 
         x = self.liste_coordonees[self.numero_coordonee - 1][0]
         y = self.liste_coordonees[self.numero_coordonee - 1][1]
 
-        x1 = x - (taille_objet / 2)
-        y1 = y - (taille_objet / 2)
-        x2 = x + (taille_objet / 2)
-        y2 = y + (taille_objet / 2)
+        x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
 
         cercle_tempor = screen.create_oval(x1, y1, x2, y2, fill = self.color)
         self.liste_trainee.append([cercle_tempor, longueur_trainee])
 
-    #print(self.liste_trainee)
         
         if self.liste_trainee[0][1] == 0:
                 screen.delete(self.liste_trainee[0][0])
@@ -341,13 +347,20 @@ class Rythme:
 
         objet = self.objet
 
-        x0 = screen.coords(objet)[0] - taille_objet/2
-        y0 = screen.coords(objet)[1] - taille_objet/2
-        x1 = screen.coords(objet)[2] + taille_objet/2
-        y1 = screen.coords(objet)[3] + taille_objet/2
+        x0, y0, x1, y1 = transfo4(screen.coords(objet)[0], screen.coords(objet)[1],
+                                     screen.coords(objet)[2], screen.coords(objet)[3], taille_objet/2)
+
 
         screen.coords(objet, x0, y0, x1, y1)
 
+
+def transfo4(a, b, c, d, objet):
+    """calcul intermédiaire"""
+    x0 = a - objet
+    y0 = b - objet
+    x1 = c + objet
+    y1 = d + objet
+    return x0, y0, x1, y1
 
 #-#-# Boucle Tkinter #-#-#
 
