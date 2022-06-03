@@ -47,6 +47,9 @@ is_paused = False
 ##Grossissement c'est pas très beau et ça fait bugger le programme
 afficher_grossisement = False
 
+mode_avec_un_seul_son = True
+frequence_du_son = 10 #entre 1 et 10 (on peut aller plus haut mais ça fait mal aux oreilles)
+
 afficher_rebond = True
 duree_de_vie_rebond = 50
 vitesse_rebond = 0.5
@@ -304,12 +307,18 @@ class Rythme:
 
             
 
-                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0]: 
-                    winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0]:
+                    if mode_avec_un_seul_son == False:
+                        winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    else:
+                        winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = True
 
                 elif son == True:
-                    winsound.PlaySound(creer_son(moyenne_des_rythmes), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    if mode_avec_un_seul_son == False:
+                        winsound.PlaySound(creer_son(moyenne_des_rythmes), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                    else:
+                        winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = False
                     
                 
