@@ -5,13 +5,14 @@ import math
 import random
 from tkinter import colorchooser
 from turtle import left, right, width
+import PIL
+from PIL import ImageTk, Image
 import winsound
 from pysound.buffer import BufferParams
 from pysound.oscillators import sine_wave
 from pysound.oscillators import square_wave
 from pysound import soundfile
 
-params = BufferParams(length=2205)
 
 #-#-# Constantes #-#-#
 
@@ -22,40 +23,34 @@ rayon_cercle = (min(WIDTH, HEIGHT) / 2) * 0.75
 centre = (WIDTH / 2, HEIGHT / 2)
 taille_objet = rayon_cercle / 12 #diamètre d'une boule
 theta0 = (3 * math.pi) / 2
-rythmes = {3,4}
-moyenne_des_rythmes = sum(rythmes)/len(rythmes)
-son = False
+params = BufferParams(length=1000)
 
 #COMPTEURS
 temps = 0
 tours = 0
-compteur_dt = 1
+compteur_dt = 0
 
-#VARIABLES 
-vitesse = 2
-acceleration = 0 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
-vitesse_trainee = 2
-longueur_trainee = 0
-durée_grossissement = 10
-
-omega = (math.pi / 2) * vitesse
-periode = (2 * math.pi) / omega #secondes
-
-LISTE_POLYRYTHMES = []
-is_paused = False
-
-##Grossissement c'est pas très beau et ça fait bugger le programme
-afficher_grossisement = False
-
-mode_avec_un_seul_son = True
-frequence_du_son = 10 #entre 1 et 10 (on peut aller plus haut mais ça fait mal aux oreilles)
-
-afficher_rebond = True
+#VARIABLES
+vitesse = 0
+acceleration = 10 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
+vitesse_trainee = 6
+longueur_trainee = 10
+periode =  2 * math.pi
 duree_de_vie_rebond = 50
 vitesse_rebond = 0.5
 
+LISTE_POLYRYTHMES = []
+rythmes = []
+
+is_paused = True
+afficher_rebond = False
+son = False
+mode_avec_un_seul_son = False
+frequence_du_son = 10
+
 #COULEURS (c'est juste pour le style)#
-LISTE_COULEUR =["orange", "blue", "pink", "purple", "green", "yellow", "red"]
+LISTE_COULEUR = ["orange", "blue", "purple", "green", "yellow", "red", "aquamarine2", "indigo", "SlateBlue1", "DeepPink", "lime", "tan", "salmon"]
+LISTE_CAMAIEU = ["#779CFF", "#77C3FF", "#77E8FF", "#77FFD8", "#77FF9A", "#ABFF77", "#D6FF77", "#FFFD77", "#FFD877", "#FFB377", "#FF8777"]
 
 #-#-# Fonctions #-#-#
 
@@ -80,7 +75,7 @@ def coord_temps(temps):
 
 
 def move_temps():
-    """Bouge les boules"""
+    """Bouge les boules ( ͡° ͜ʖ ͡°)"""
     global temps, tours, compteur_dt
 
     if is_paused == False:
@@ -103,8 +98,6 @@ def move_temps():
         screen.move(objet_temps, dx, dy)
         temps += dt
         compteur_dt += 1
-        
-
         screen.after(int(dt*1000), move_temps)
 
 
@@ -114,8 +107,12 @@ def trace_rythme(NOMBRE_DE_RYTHME):
 
     coord_sommet = []
     alpha = theta0
-    color = random.choice(LISTE_COULEUR)
-    LISTE_COULEUR.remove(color)
+    if NOMBRE_DE_RYTHME-2 > len(LISTE_CAMAIEU):
+        n = (NOMBRE_DE_RYTHME-2) % len(LISTE_CAMAIEU)
+        color = LISTE_CAMAIEU[n]
+    else:
+        color = LISTE_CAMAIEU[NOMBRE_DE_RYTHME-2]
+    #LISTE_COULEUR.remove(color)
     n = 0
 
     while n != NOMBRE_DE_RYTHME:
@@ -170,7 +167,6 @@ def trace_rythme(NOMBRE_DE_RYTHME):
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
-
 def calcul_coord (n, corr, coord_par_seg, co_som):
     """retourne une liste contenant toutes les positions de la boule pour un polygone à n sommets, 
     avec une certaine correction corr, et un nombre de coordonnées par segement déja défini, la liste
@@ -178,14 +174,14 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
     liste_coord = []
     for  i in range(n):
         if i == n-1 and corr != 0:
-                
+    #car on rajoute la correction au dernier segment                
             for j in range(coord_par_seg + corr):
-
+                
                 if j == 0:
                     coord_x = co_som[i][0]
                     coord_y = co_som[i][1]
                     liste_coord.append([coord_x, coord_y])
-
+                    
                 else:
 
                     accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
@@ -202,9 +198,15 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
 
                 if i == n-1:
                     
-                    coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
-                    coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
-                    liste_coord.append([coord_x, coord_y])
+                    if j == 0:
+                        coord_x = co_som[i][0]
+                        coord_y = co_som[i][1]
+                        liste_coord.append([coord_x, coord_y])
+
+                    else:
+                        coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
+                        coord_y = co_som[i][1] + (co_som[0][1] - co_som[i][1]) * accel
+                        liste_coord.append([coord_x, coord_y])
 
                 else:
 
@@ -213,30 +215,6 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
                     liste_coord.append([coord_x, coord_y])
 
     return liste_coord
-
-
-
-def cercle_bis(sommet):
-    
-    #for i in range(2):
-    x0 = abs(sommet[i][0] - centre[0])
-    y0 = abs(sommet[i][1] - centre[1])
-    med0 = [x0/2, y0/2]
-    pente_ortho0 = x0 / y0
-
-
-    x1 = abs(sommet[1][0] - centre[0])
-    y1 = abs(sommet[1][1] - centre[1])  
-    med1 = [x1/2, y1/2]
-    pente_ortho1 = x1 / y1
-    
-    a = np.array([pente_ortho0, -1], [pente_ortho1, -1])
-    b = np.array([-med0[1]+pente_ortho0*med0[0]], [-med1[1]+pente_ortho1*med1[0]])
-
-    sol = np.linalg.solve(a, b)
-
-    return [sol[0], sol[1]]
-
 
 def pause():
     global is_paused
@@ -251,14 +229,14 @@ def pause():
 class Rythme:
 
     def __init__(self, liste):
-        """Ici notre objet rythme sera une liste sous la forme [A, N, X, S, T, C] avec :
-        # A l'objet associé à ce rythme,
+        """Ici notre objet rythme sera une liste sous la forme [O, N, X, S, T, C, R] avec :
+        # O l'objet associé à ce rythme,
         # N le numéro des coordonées ou se trouve l'objet (par rapport à la liste des coordonnées)
         # X la liste de toutes les coordonées parcourues par l'objet (sous la forme [[x,y], [x,y], ..., [x,y]])
         # S les coordonées de chaques sommets (sous la forme [[x1, y1], ..., [xn, yn]])
         # T la liste contenant tout les objets de la trainée (sous la forme [[Objet_1, Durée], ..., [Objet_n, Durée]])
         # C la couleur associée à ce rythme
-        # G la liste contenant les objets des rebond"""
+        # R la liste contenant les objets des rebond"""
 
         liste_points = liste[3].copy()
 
@@ -269,8 +247,6 @@ class Rythme:
         liste_coordonees = liste[2]
         liste_trainee = liste[4]
         color = liste[5]
-        liste_taille_double = []
-        liste_gros = []
         rebond = liste[6]
 
         self.nb_points= nb_points
@@ -282,19 +258,6 @@ class Rythme:
         self.color = color
         self.rebond = rebond
 
-        if afficher_grossisement == True:
-
-            for i in range(len(self.liste_coordonees)):
-                for sommet in self.liste_points:
-                    if self.liste_coordonees[i] == sommet:
-                        liste_taille_double.append(i-durée_grossissement)
-                        for j in range((-1)*durée_grossissement + 1, durée_grossissement + 1):
-                            liste_gros.append(i+j)
-        
-                    
-        self.liste_taille_double = liste_taille_double
-        self.liste_gros = liste_gros
-
 
     def move_rythm(self, liste):
         global LISTE_POLYRYTHMES, son
@@ -305,21 +268,23 @@ class Rythme:
 
             if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
 
-            
+                print(self.liste_coordonees[self.numero_coordonee-1] )
 
-                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0]:
+                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0] and self.liste_coordonees[self.numero_coordonee-1] != self.liste_coordonees[self.numero_coordonee-2] :
                     if mode_avec_un_seul_son == False:
                         winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = True
+                
 
-                elif son == True:
+                elif son == True and self.liste_coordonees[self.numero_coordonee-1] == self.liste_points[0]:
                     if mode_avec_un_seul_son == False:
-                        winsound.PlaySound(creer_son(moyenne_des_rythmes), winsound.SND_ASYNC | winsound.SND_ALIAS)
+                        winsound.PlaySound(creer_son(50), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = False
+                    
                     
                 
 
@@ -348,11 +313,12 @@ class Rythme:
 
         ##COORDONNEES
 
+        #réinitialiser le numéro et la position de l'objet au bout d'un tour
         if self.numero_coordonee == len(self.liste_coordonees):
-            x = self.liste_coordonees[1][0]
-            y = self.liste_coordonees[1][1]
+            x = self.liste_coordonees[0][0]
+            y = self.liste_coordonees[0][1]
 
-            liste[1] = 1
+            liste[1] = 0
 
         else:
             x = self.liste_coordonees[self.numero_coordonee][0]
@@ -360,19 +326,11 @@ class Rythme:
 
             liste[1] += 1
 
-        if self.numero_coordonee in self.liste_taille_double:
+        
+        x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
 
-            self.double_taille()
+        screen.coords(self.objet, x1, y1, x2, y2)
 
-        elif self.numero_coordonee in self.liste_gros: 
-            x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet)
-
-            screen.coords(self.objet, x1, y1, x2, y2)
-
-        else: 
-            x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
-
-            screen.coords(self.objet, x1, y1, x2, y2)
 
 
 
@@ -384,7 +342,7 @@ class Rythme:
 
         x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
 
-        cercle_tempor = screen.create_oval(x1, y1, x2, y2, fill = self.color)
+        cercle_tempor = screen.create_oval(x1, y1, x2, y2, fill=self.color, outline=self.color)
         self.liste_trainee.append([cercle_tempor, longueur_trainee])
 
         
@@ -395,20 +353,11 @@ class Rythme:
 
         for i in range(len(self.liste_trainee)):
             self.liste_trainee[i][1] -= 1
-
-        #for objet in self.liste_trainee:
-            #if objet[1] == 0:
-                #self.liste_trainee.pop(0)
-
-    def double_taille(self):
-
-        objet = self.objet
-
-        x0, y0, x1, y1 = transfo4(screen.coords(objet)[0], screen.coords(objet)[1],
-                                     screen.coords(objet)[2], screen.coords(objet)[3], taille_objet/2)
-
-
-        screen.coords(objet, x0, y0, x1, y1)
+            a = screen.coords(self.liste_trainee[i][0])[0]
+            b = screen.coords(self.liste_trainee[i][0])[1]
+            c = screen.coords(self.liste_trainee[i][0])[2]
+            d = screen.coords(self.liste_trainee[i][0])[3]
+            screen.coords(self.liste_trainee[i][0], a+1, b+1, c-1, d-1)
 
 
 def transfo4(a, b, c, d, objet):
@@ -419,27 +368,185 @@ def transfo4(a, b, c, d, objet):
     y1 = d + objet
     return x0, y0, x1, y1
 
+
+## FONTIONS LIEES AUX WIDGETS ##
+
+def valider():
+    global omega, periode, acceleration, longueur_trainee, vitesse_trainee, is_paused
+    vitesse = s_speed.get()
+    acceleration = s_acceleration.get()
+    longueur_trainee = s_trace.get()
+    vitesse_trainee = 50 / (s_trace_speed.get())
+    omega = (math.pi / 2) *vitesse
+    periode = (2 * math.pi) / omega
+
+    for i in rythmes:
+        trace_rythme(i)
+
+    if is_paused == True:
+        is_paused = False
+        move_temps()
+        butt.configure(text = 'Arrêter', command=arreter)
+        #effacer tt dans le canvas et dans les listes 
+    else : 
+        is_paused = True
+        butt.configure(text = 'Reprendre')
+
+def arreter():
+    global LISTE_POLYRYTHMES, cercle, rythmes, objet_temps, is_paused, temps, tours, compteur_dt
+    is_paused = True
+    screen.delete("all")
+    LISTE_POLYRYTHMES = []
+    rythmes = []
+    temps = 0
+    tours = 0
+    compteur_dt = 0
+
+    cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercle), (centre[0] + rayon_cercle),
+                             (centre[1] + rayon_cercle), outline="gray")
+
+    objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2),
+                                  centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2),
+                                 fill="#EAF3FB", outline="#A2B5C7")
+
+    butt.configure(text = 'Commencer', command=valider)
+
+
+def etat(parametre):
+    '''configure l'état d'une variable bouléenne. fonction liée aux Checkbuttons'''
+    if parametre == False :
+        parametre = True
+    else :
+        parametre = False
+
+
+def etat_rebond():
+    '''configure l'affichage ou non du rebond'''
+    global afficher_rebond
+    if afficher_rebond == False:
+        afficher_rebond = True
+        bouton_rebound.select()
+    else : 
+        afficher_rebond = False
+        bouton_rebound.deselect()
+
+def etat_son():
+    global son
+    if son == False :
+        son = True
+        bouton_son.select()
+        bouton_mode_son.configure(state = 'normal')
+    else : 
+        son = False
+        bouton_son.deselect()
+        bouton_mode_son.configure(state = 'disabled')
+
+def etat_mode_son():
+    global mode_avec_un_seul_son
+    if mode_avec_un_seul_son == False:
+        mode_avec_un_seul_son = True
+        bouton_mode_son.select()
+    else :
+        mode_avec_un_seul_son = False
+        bouton_mode_son.deselect()
+
+
+def input_rythm():
+    global rythmes, pho
+    if e_rythm.get() == "georges":
+        textimage1 = Image.open("lesasa.JPG")
+        textimage = textimage1.resize((HEIGHT, WIDTH))
+        pho = ImageTk.PhotoImage(textimage)
+        im = tk.Label(screen, image = pho)
+        im.grid(row = 1)
+    elif e_rythm.get() == "modolo":
+        textimage1 = Image.open("modulo.JPG")
+        textimage = textimage1.resize((HEIGHT, WIDTH))
+        pho = ImageTk.PhotoImage(textimage)
+        im = tk.Label(screen, image = pho)
+        im.grid(row = 1)
+
+    rythmes.append(int(e_rythm.get()))
+    e_rythm.delete(0, 'end')
+
+
+def info():
+    global ph
+
+    #####ça marche
+    info_panel = tk.Toplevel()
+    titre = tk.Label(info_panel, text = 'QUELQUES INFORMATIONS')
+    textimage = Image.open("infos.png")
+    ph = ImageTk.PhotoImage(textimage)
+    im = tk.Label(info_panel, image = ph) 
+
+    titre.grid(row = 0)
+    im.grid(row = 1)
+    
+
 #-#-# Boucle Tkinter #-#-#
 
 root = tk.Tk()
+root.iconphoto(True, tk.PhotoImage(file='joscoo.png'))
 root.title("aaaaaaaaaaaaaaaaaaa")
 
 screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
-cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercle), (centre[0] + rayon_cercle), (centre[1] + rayon_cercle), outline="#2FA0FF")
-objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2), centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2), fill="#EAF3FB", outline="#A2B5C7")
-bouton_pause = tk.Button(text="PAUSE", command=pause)
+cercle = screen.create_oval((centre[0] - rayon_cercle), (centre[1] - rayon_cercle), (centre[0] + rayon_cercle),
+                             (centre[1] + rayon_cercle), outline="gray")
+objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayon_cercle) - (taille_objet/2),
+                                  centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2),
+                                 fill="#EAF3FB", outline="#A2B5C7")
 
+infos = tk.Button(root, text = 'Infos ?', command = info)
+v = tk.Label(root, text = 'vitesse')
+a = tk.Label(root, text = 'accélération')
+t = tk.Label(root, text = 'Traînée')
+lt = tk.Label(root, text = 'longueur de la traînée')
+vt = tk.Label(root, text = 'vitesse de trainée')
+r = tk.Label(root, text = 'RYTHMES :')
+s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 10, tickinterval = 1, length = 250, resolution=0.1, label = 'vitesse')
+s_acceleration = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 15, tickinterval = 2, length = 300, label = 'accélération')
+s_trace = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 100, tickinterval = 10, length = 350,
+                   label = 'longueur de la traînée')
+s_trace_speed = tk.Scale(root, orient = 'horizontal', from_ = 5, to = 30, tickinterval = 5, length = 300,
+                         label = 'vitesse de traînée')
+s_duree_rebond = tk.Scale(root, orient = 'horizontal', from_ = 10, to = 80, tickinterval = 10, length = 300,
+                         label = 'durée de vie du rebond')
+bouton_rebound = tk.Checkbutton(root, text = 'rebonds aux sommets',cursor = 'gumby', command = etat_rebond)
+bouton_son = tk.Checkbutton(root, text = 'son', command = etat_son)
+bouton_mode_son = tk.Checkbutton(root, text = 'mode son unique', state = 'disabled', command = etat_mode_son)
+e_rythm = tk.Entry(root, width = 10)
+bouton_rythme = tk.Button(root, text = 'Ajouter', command = input_rythm)
+bouton_pause = tk.Button(text = "PAUSE", command = pause)
+butt = tk.Button(root, text = 'Commencer', command  = valider)
 
+#Réglage par défaut
+s_speed.set(2)
+s_acceleration.set(5)
+s_trace.set(10)
+s_trace_speed.set(5)
+s_duree_rebond.set(50)
 
-for i in rythmes:
-    trace_rythme(i)
-
-move_temps()
-
-
-screen.grid(column=0, row=0)
-bouton_pause.grid(row=1)
-
-print()
+#placement des widgets
+screen.grid(column=3, row=0 , rowspan = 10)
+#v.grid(row = 0, padx = 10)
+infos.grid(column = 0, row = 0)
+s_speed.grid(column = 0, row = 1, padx = 15, pady = 5, columnspan = 3)
+#a.grid(row = 1, column = 0, padx = 10)
+s_acceleration.grid(row =2, column = 0, padx = 15, pady = 5, columnspan = 3) 
+t.grid(row = 3, column = 0, columnspan = 3)
+#lt.grid(row = 3, column = 0, padx = 10)
+s_trace.grid(row = 4, column = 0, padx = 15, pady = 5, columnspan = 3)
+#vt.grid(row = 4, column = 0, padx = 10)
+s_trace_speed.grid(row = 5, column = 0, padx = 15, pady = 5, columnspan = 3)
+bouton_rebound.grid(row = 6, column = 0)
+s_duree_rebond.grid(row = 6, column = 1, padx = 15, pady = 5, sticky = 'e')
+bouton_son.grid(row = 7, column = 0)
+bouton_mode_son.grid(row = 7, column = 1)
+r.grid(row = 8, column = 0, padx = 10)
+e_rythm.grid(row = 8, column = 1, padx = 10)
+bouton_rythme.grid(row = 8, column = 2, padx = 10)
+bouton_pause.grid(row = 9, column = 0, padx = 15)
+butt.grid(row = 9, column = 1 , padx = 15)
 
 root.mainloop()

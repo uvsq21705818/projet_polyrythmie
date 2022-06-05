@@ -107,7 +107,11 @@ def trace_rythme(NOMBRE_DE_RYTHME):
 
     coord_sommet = []
     alpha = theta0
-    color = LISTE_CAMAIEU[NOMBRE_DE_RYTHME-2]
+    if NOMBRE_DE_RYTHME-2 > len(LISTE_CAMAIEU):
+        n = (NOMBRE_DE_RYTHME-2) % len(LISTE_CAMAIEU)
+        color = LISTE_CAMAIEU[n]
+    else:
+        color = LISTE_CAMAIEU[NOMBRE_DE_RYTHME-2]
     #LISTE_COULEUR.remove(color)
     n = 0
 
@@ -264,21 +268,23 @@ class Rythme:
 
             if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
 
-            
+                print(self.liste_coordonees[self.numero_coordonee-1] )
 
-                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0]:
+                if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0] and self.liste_coordonees[self.numero_coordonee-1] != self.liste_coordonees[self.numero_coordonee-2] :
                     if mode_avec_un_seul_son == False:
                         winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = True
+                
 
-                elif son == True:
+                elif son == True and self.liste_coordonees[self.numero_coordonee-1] == self.liste_points[0]:
                     if mode_avec_un_seul_son == False:
                         winsound.PlaySound(creer_son(50), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     son = False
+                    
                     
                 
 
@@ -446,19 +452,7 @@ def etat_mode_son():
 
 
 def input_rythm():
-    global rythmes, pho
-    if e_rythm.get() == "georges":
-        textimage1 = Image.open("lesasa.JPG")
-        textimage = textimage1.resize((HEIGHT, WIDTH))
-        pho = ImageTk.PhotoImage(textimage)
-        im = tk.Label(screen, image = pho)
-        im.grid(row = 1)
-    elif e_rythm.get() == "modolo":
-        textimage1 = Image.open("modulo.JPG")
-        textimage = textimage1.resize((HEIGHT, WIDTH))
-        pho = ImageTk.PhotoImage(textimage)
-        im = tk.Label(screen, image = pho)
-        im.grid(row = 1)
+    global rythmes
 
     rythmes.append(int(e_rythm.get()))
     e_rythm.delete(0, 'end')
@@ -498,7 +492,7 @@ t = tk.Label(root, text = 'Traînée')
 lt = tk.Label(root, text = 'longueur de la traînée')
 vt = tk.Label(root, text = 'vitesse de trainée')
 r = tk.Label(root, text = 'RYTHMES :')
-s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 10, tickinterval = 1, length = 250, label = 'vitesse')
+s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 10, tickinterval = 1, length = 250, resolution=0.1, label = 'vitesse')
 s_acceleration = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 15, tickinterval = 2, length = 300, label = 'accélération')
 s_trace = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 100, tickinterval = 10, length = 350,
                    label = 'longueur de la traînée')
