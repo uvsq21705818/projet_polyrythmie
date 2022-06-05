@@ -464,7 +464,7 @@ def info():
     #####ça marche
     info_panel = tk.Toplevel()
     titre = tk.Label(info_panel, text = 'QUELQUES INFORMATIONS')
-    textimage = Image.open("infos.png")
+    textimage = Image.open("quelques_infos.png")
     ph = ImageTk.PhotoImage(textimage)
     im = tk.Label(info_panel, image = ph) 
 
