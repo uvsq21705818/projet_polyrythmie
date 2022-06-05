@@ -32,10 +32,10 @@ tours = 0
 compteur_dt = 1
 
 #VARIABLES 
-vitesse = 3
+vitesse = 2
 acceleration = 0 #mesure arbitraire de l'accélération d'une boule d'un rythme sur un segment
 vitesse_trainee = 2
-longueur_trainee = 5
+longueur_trainee = 0
 durée_grossissement = 10
 
 omega = (math.pi / 2) * vitesse
