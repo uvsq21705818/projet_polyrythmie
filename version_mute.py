@@ -5,7 +5,6 @@ import math
 import random
 from tkinter import colorchooser
 from turtle import left, right, width
-import PIL
 from PIL import ImageTk, Image
 
 
@@ -40,7 +39,6 @@ is_paused = True
 afficher_rebond = False
 
 #COULEURS (c'est juste pour le style)#
-LISTE_COULEUR = ["orange", "blue", "purple", "green", "yellow", "red", "aquamarine2", "indigo", "SlateBlue1", "DeepPink", "lime", "tan", "salmon"]
 LISTE_CAMAIEU = ["#779CFF", "#77C3FF", "#77E8FF", "#77FFD8", "#77FF9A", "#ABFF77", "#D6FF77", "#FFFD77", "#FFD877", "#FFB377", "#FF8777"]
 
 #-#-# Fonctions #-#-#
@@ -371,7 +369,7 @@ def pause():
         is_paused = False
         move_temps()
 
-        
+
 def etat_rebond():
     '''configure l'affichage ou non du rebond'''
     global afficher_rebond
