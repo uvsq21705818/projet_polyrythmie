@@ -189,21 +189,12 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
                         liste_coord.append([coord_x, coord_y])
 
                 else:
-
                     coord_x = co_som[i][0] + (co_som[i+1][0] - co_som[i][0]) * accel
                     coord_y = co_som[i][1] + (co_som[i+1][1] - co_som[i][1]) * accel
                     liste_coord.append([coord_x, coord_y])
 
     return liste_coord
 
-
-def pause():
-    global is_paused
-    if is_paused == False:
-        is_paused = True
-    else:
-        is_paused = False
-        move_temps()
 
 #-#-# Classes #-#-#
 
@@ -293,8 +284,6 @@ class Rythme:
         screen.coords(self.objet, x1, y1, x2, y2)
 
 
-
-
     def trainee(self):
         """sale trainée"""
 
@@ -347,15 +336,16 @@ def valider():
     if is_paused == True:
         is_paused = False
         move_temps()
-        butt.configure(text = 'Arrêter', command=arreter)
-        #effacer tt dans le canvas et dans les listes 
+        button.configure(text = 'Arrêter', command=arreter)
     else : 
         is_paused = True
-        butt.configure(text = 'Reprendre')
+        button.configure(text = 'Reprendre')
+
 
 def arreter():
     global LISTE_POLYRYTHMES, cercle, rythmes, objet_temps, is_paused, temps, tours, compteur_dt
     is_paused = True
+    #effacer tous les polygones et les contenus des listes
     screen.delete("all")
     LISTE_POLYRYTHMES = []
     rythmes = []
@@ -370,9 +360,18 @@ def arreter():
                                   centre[0] + (taille_objet/2), (centre[1] + rayon_cercle) + (taille_objet/2),
                                  fill="#EAF3FB", outline="#A2B5C7")
 
-    butt.configure(text = 'Commencer', command=valider)
+    button.configure(text = 'Commencer', command=valider)
 
 
+def pause():
+    global is_paused
+    if is_paused == False:
+        is_paused = True
+    else:
+        is_paused = False
+        move_temps()
+
+        
 def etat_rebond():
     '''configure l'affichage ou non du rebond'''
     global afficher_rebond
@@ -382,6 +381,7 @@ def etat_rebond():
     else : 
         afficher_rebond = False
         bouton_rebound.deselect()
+
 
 def etat_son():
     global son
@@ -456,7 +456,7 @@ bouton_mode_son = tk.Checkbutton(root, text = 'mode son unique', state = 'disabl
 e_rythm = tk.Entry(root, width = 10)
 bouton_rythme = tk.Button(root, text = 'Ajouter', command = input_rythm)
 bouton_pause = tk.Button(text = "PAUSE", command = pause)
-butt = tk.Button(root, text = 'Commencer', command  = valider)
+button = tk.Button(root, text = 'Commencer', command  = valider)
 
 #Réglage par défaut
 s_speed.set(2)
@@ -481,6 +481,6 @@ r.grid(row = 8, column = 0, padx = 10)
 e_rythm.grid(row = 8, column = 1, padx = 10)
 bouton_rythme.grid(row = 8, column = 2, padx = 10)
 bouton_pause.grid(row = 9, column = 0, padx = 15)
-butt.grid(row = 9, column = 1 , padx = 15)
+button.grid(row = 9, column = 1 , padx = 15)
 
 root.mainloop()
