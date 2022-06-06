@@ -63,8 +63,8 @@ def creer_son(nombre_rythme):
     out = square_wave(params, frequency=frequence)
     soundfile.save(params, wav_name, out)
 
-
     return wav_name
+
 
 def coord_temps(temps):
     """Calcule les coordonnées de la boule à un instant donné"""
@@ -103,7 +103,7 @@ def move_temps():
 
 def trace_rythme(NOMBRE_DE_RYTHME):
     """Trace un motif polyrythmique avec un nombre N de mesures"""
-    global LISTE_COULEUR
+    global LISTE_CAMAIEU
 
     coord_sommet = []
     alpha = theta0
@@ -112,7 +112,6 @@ def trace_rythme(NOMBRE_DE_RYTHME):
         color = LISTE_CAMAIEU[n]
     else:
         color = LISTE_CAMAIEU[NOMBRE_DE_RYTHME-2]
-    #LISTE_COULEUR.remove(color)
     n = 0
 
     while n != NOMBRE_DE_RYTHME:
@@ -167,6 +166,7 @@ def trace_rythme(NOMBRE_DE_RYTHME):
 
     LISTE_POLYRYTHMES.append(liste_rythme)
 
+
 def calcul_coord (n, corr, coord_par_seg, co_som):
     """retourne une liste contenant toutes les positions de la boule pour un polygone à n sommets, 
     avec une certaine correction corr, et un nombre de coordonnées par segement déja défini, la liste
@@ -183,7 +183,6 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
                     liste_coord.append([coord_x, coord_y])
                     
                 else:
-
                     accel = (math.exp(acceleration * ((j+1)/coord_par_seg)) / math.exp(acceleration)) * ((j+1) / coord_par_seg)
 
                     coord_x = co_som[i][0] + (co_som[0][0] - co_som[i][0]) * accel
@@ -209,12 +208,12 @@ def calcul_coord (n, corr, coord_par_seg, co_som):
                         liste_coord.append([coord_x, coord_y])
 
                 else:
-
                     coord_x = co_som[i][0] + (co_som[i+1][0] - co_som[i][0]) * accel
                     coord_y = co_som[i][1] + (co_som[i+1][1] - co_som[i][1]) * accel
                     liste_coord.append([coord_x, coord_y])
 
     return liste_coord
+
 
 def pause():
     global is_paused
@@ -283,10 +282,7 @@ class Rythme:
                         winsound.PlaySound(creer_son(50), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
-                    son = False
-                    
-                    
-                
+                    son = False                                                     
 
                 x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
                 y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
@@ -325,13 +321,10 @@ class Rythme:
             y = self.liste_coordonees[self.numero_coordonee][1]
 
             liste[1] += 1
-
         
         x1, y1, x2, y2 = transfo4(x, y, x, y, taille_objet/2)
 
         screen.coords(self.objet, x1, y1, x2, y2)
-
-
 
 
     def trainee(self):
@@ -348,8 +341,7 @@ class Rythme:
         
         if self.liste_trainee[0][1] == 0:
                 screen.delete(self.liste_trainee[0][0])
-                self.liste_trainee.pop(0)
-    
+                self.liste_trainee.pop(0)    
 
         for i in range(len(self.liste_trainee)):
             self.liste_trainee[i][1] -= 1
@@ -392,6 +384,7 @@ def valider():
         is_paused = True
         butt.configure(text = 'Reprendre')
 
+
 def arreter():
     global LISTE_POLYRYTHMES, cercle, rythmes, objet_temps, is_paused, temps, tours, compteur_dt
     is_paused = True
@@ -412,14 +405,6 @@ def arreter():
     butt.configure(text = 'Commencer', command=valider)
 
 
-def etat(parametre):
-    '''configure l'état d'une variable bouléenne. fonction liée aux Checkbuttons'''
-    if parametre == False :
-        parametre = True
-    else :
-        parametre = False
-
-
 def etat_rebond():
     '''configure l'affichage ou non du rebond'''
     global afficher_rebond
@@ -429,6 +414,7 @@ def etat_rebond():
     else : 
         afficher_rebond = False
         bouton_rebound.deselect()
+
 
 def etat_son():
     global son
@@ -440,6 +426,7 @@ def etat_son():
         son = False
         bouton_son.deselect()
         bouton_mode_son.configure(state = 'disabled')
+
 
 def etat_mode_son():
     global mode_avec_un_seul_son
@@ -461,7 +448,6 @@ def input_rythm():
 def info():
     global ph
 
-    #####ça marche
     info_panel = tk.Toplevel()
     titre = tk.Label(info_panel, text = 'QUELQUES INFORMATIONS')
     textimage = Image.open("quelques_infos.png")
@@ -486,11 +472,7 @@ objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayo
                                  fill="#EAF3FB", outline="#A2B5C7")
 
 infos = tk.Button(root, text = 'Infos ?', command = info)
-v = tk.Label(root, text = 'vitesse')
-a = tk.Label(root, text = 'accélération')
 t = tk.Label(root, text = 'Traînée')
-lt = tk.Label(root, text = 'longueur de la traînée')
-vt = tk.Label(root, text = 'vitesse de trainée')
 r = tk.Label(root, text = 'RYTHMES :')
 s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 10, tickinterval = 1, length = 250, resolution=0.1, label = 'vitesse')
 s_acceleration = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 15, tickinterval = 2, length = 300, label = 'accélération')
@@ -517,15 +499,11 @@ s_duree_rebond.set(50)
 
 #placement des widgets
 screen.grid(column=3, row=0 , rowspan = 10)
-#v.grid(row = 0, padx = 10)
 infos.grid(column = 0, row = 0)
 s_speed.grid(column = 0, row = 1, padx = 15, pady = 5, columnspan = 3)
-#a.grid(row = 1, column = 0, padx = 10)
 s_acceleration.grid(row =2, column = 0, padx = 15, pady = 5, columnspan = 3) 
 t.grid(row = 3, column = 0, columnspan = 3)
-#lt.grid(row = 3, column = 0, padx = 10)
 s_trace.grid(row = 4, column = 0, padx = 15, pady = 5, columnspan = 3)
-#vt.grid(row = 4, column = 0, padx = 10)
 s_trace_speed.grid(row = 5, column = 0, padx = 15, pady = 5, columnspan = 3)
 bouton_rebound.grid(row = 6, column = 0)
 s_duree_rebond.grid(row = 6, column = 1, padx = 15, pady = 5, sticky = 'e')
