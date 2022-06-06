@@ -459,7 +459,6 @@ def info():
 #-#-# Boucle Tkinter #-#-#
 
 root = tk.Tk()
-root.iconphoto(True, tk.PhotoImage(file='joscoo.png'))
 root.title("aaaaaaaaaaaaaaaaaaa")
 
 screen = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg="black")
