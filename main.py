@@ -43,9 +43,10 @@ rythmes = []
 
 is_paused = True
 afficher_rebond = False
-son = False
+son_debut = False
 mode_avec_un_seul_son = False
 frequence_du_son = 10
+activer_son = False
 
 #COULEURS (c'est juste pour le style)#
 LISTE_CAMAIEU = ["#779CFF", "#77C3FF", "#77E8FF", "#77FFD8", "#77FF9A", "#ABFF77", "#D6FF77", "#FFFD77", "#FFD877", "#FFB377", "#FF8777"]
@@ -248,35 +249,38 @@ class Rythme:
 
 
     def move_rythm(self, liste):
-        global LISTE_POLYRYTHMES, son
+        global LISTE_POLYRYTHMES, son_debut
 
         ##REBOND
 
-        if afficher_rebond == True:
 
-            if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
+        if self.liste_coordonees[self.numero_coordonee-1] in self.liste_points:
 
-                print(self.liste_coordonees[self.numero_coordonee-1] )
+            if activer_son == True:
 
                 if self.liste_coordonees[self.numero_coordonee-1] != self.liste_points[0] and self.liste_coordonees[self.numero_coordonee-1] != self.liste_coordonees[self.numero_coordonee-2] :
                     if mode_avec_un_seul_son == False:
                         winsound.PlaySound(creer_son(self.nb_points), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
-                    son = True
+                    son_debut = True
                 
 
-                elif son == True and self.liste_coordonees[self.numero_coordonee-1] == self.liste_points[0]:
+                elif son_debut == True and self.liste_coordonees[self.numero_coordonee-1] == self.liste_points[0]:
                     if mode_avec_un_seul_son == False:
                         winsound.PlaySound(creer_son(50), winsound.SND_ASYNC | winsound.SND_ALIAS)
                     else:
                         winsound.PlaySound(creer_son(frequence_du_son), winsound.SND_ASYNC | winsound.SND_ALIAS)
-                    son = False                                                     
+                    son_debut = False                                                     
+
+            if afficher_rebond == True:
 
                 x_rebond = self.liste_coordonees[self.numero_coordonee-1][0]
                 y_rebond = self.liste_coordonees[self.numero_coordonee-1][1]
                 cercle = screen.create_oval(x_rebond + 5, y_rebond + 5, x_rebond - 5, y_rebond - 5, width=(duree_de_vie_rebond/5), outline=self.color)
                 self.rebond.append([cercle, duree_de_vie_rebond])
+
+        if afficher_rebond == True:
 
             for objet in self.rebond:
                 if objet[1] >= 0:
@@ -415,13 +419,13 @@ def etat_rebond():
 
 
 def etat_son():
-    global son
-    if son == False :
-        son = True
+    global activer_son
+    if activer_son == False :
+        activer_son = True
         bouton_son.select()
         bouton_mode_son.configure(state = 'normal')
     else : 
-        son = False
+        activer_son = False
         bouton_son.deselect()
         bouton_mode_son.configure(state = 'disabled')
 
@@ -471,7 +475,7 @@ objet_temps = screen.create_oval(centre[0] - (taille_objet/2), (centre[1] + rayo
 infos = tk.Button(root, text = 'Infos ?', command = info)
 t = tk.Label(root, text = 'Traînée')
 r = tk.Label(root, text = 'RYTHMES :')
-s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 10, tickinterval = 1, length = 250, resolution=0.1, label = 'vitesse')
+s_speed = tk.Scale(root, orient = 'horizontal', from_ = 1, to = 3, tickinterval = 1, length = 500, resolution=0.01, label = 'vitesse')
 s_acceleration = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 15, tickinterval = 2, length = 300, label = 'accélération')
 s_trace = tk.Scale(root, orient = 'horizontal', from_ = 0, to = 100, tickinterval = 10, length = 350,
                    label = 'longueur de la traînée')
